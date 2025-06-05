@@ -27,23 +27,27 @@ app.post('/setRank', async (req, res) => {
     const { groupId, userId, rankId } = req.body;
 
     try {
+        // ขอ CSRF Token
         const xsrfRes = await axiosInstance.post('https://auth.roblox.com/v2/logout');
         const token = xsrfRes.headers['x-csrf-token'];
+        console.log("CSRF Token:", token);
 
+        // ส่งคำขอเปลี่ยนยศ
         const result = await axios.patch(
             `https://groups.roblox.com/v1/groups/${groupId}/users/${userId}`,
             { roleId: rankId },
             {
                 headers: {
                     'X-CSRF-TOKEN': token,
-                    'Cookie': `.ROBLOSECURITY=${COOKIE}`
+                    'Cookie': `.ROBLOSECURITY=${COOKIE}`,
+                    'Content-Type': 'application/json'
                 }
             }
         );
 
         res.json({ success: true, data: result.data });
     } catch (err) {
-        console.error(err.response?.data || err.message);
+        console.error("Error Details:", err.response?.data || err.message);
         res.status(500).json({ success: false, error: err.response?.data || err.message });
     }
 });
